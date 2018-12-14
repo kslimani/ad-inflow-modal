@@ -185,14 +185,19 @@ export default class AdInflowModal {
       this._close()
     })
 
-    this._show()
-    this._body.lock()
-
     if (autoplay) {
+      // Modal will show up on VAST "ad impression" event
+      this._adPlayer.on('impression', (o) => {
+        this._show()
+        this._body.lock()
+      })
+
       this._showCloseButton(this._o.closeButtonDelay)
       this._adPlayer.play()
     } else {
       // Play must be done via a user action on mobile devices
+      this._show()
+      this._body.lock()
       this._showPlayOverlay()
     }
   }
