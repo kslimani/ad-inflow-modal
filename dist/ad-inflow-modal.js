@@ -473,16 +473,23 @@ function () {
         _this5._close();
       });
 
-      this._show();
-
-      this._body.lock();
-
       if (autoplay) {
+        // Modal will show up on VAST "ad impression" event
+        this._adPlayer.on('impression', function (o) {
+          _this5._show();
+
+          _this5._body.lock();
+        });
+
         this._showCloseButton(this._o.closeButtonDelay);
 
         this._adPlayer.play();
       } else {
         // Play must be done via a user action on mobile devices
+        this._show();
+
+        this._body.lock();
+
         this._showPlayOverlay();
       }
     }
