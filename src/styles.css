@@ -47,7 +47,6 @@
 
 /* Fixed body */
 .ad-inflow-body {
-  position: fixed;
   overflow: hidden;
 }
 
