@@ -1,7 +1,7 @@
 // can-autoplay.js
 
 import { make } from './dom'
-import videoBlob from './video-blob'
+import { video } from './dummy'
 
 // Create once the video element to avoid to set source each time can-autoplay function is called
 // This fix an issue where play() is called when source is not fully loaded
@@ -9,7 +9,7 @@ import videoBlob from './video-blob'
 const element = make('video', {
   attr: {
     playsinline: null,
-    src: videoBlob().source,
+    src: video.source,
   }
 })
 
