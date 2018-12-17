@@ -1,4 +1,5 @@
 import { make, el, addOneClass, removeClass } from './dom'
+import { svg } from './dummy'
 import BodyLocker from './body-locker'
 import detectMobile from './detect-mobile'
 import canAutoPlay from './can-autoplay'
@@ -31,6 +32,8 @@ export default class AdInflowModal {
     o.closeButtonDelay || (o.closeButtonDelay = 5000)
     o.skipAdIfNoAutoplay || (o.skipAdIfNoAutoplay = false)
     o.canAutoplayTimeout || (o.canAutoplayTimeout = 1000)
+    o.logAdPlayerErrors || (o.logAdPlayerErrors = true)
+    o.destroyTimeout || (o.destroyTimeout = 10000)
 
     if (! o.imaAdPlayer) {
       throw new Error('AdInflowModal error: ima ad player configuration is missing')
@@ -95,6 +98,7 @@ export default class AdInflowModal {
       class: 'ad-inflow-video',
       attr: {
         playsinline: null,
+        poster: svg.source,
       },
     })
 
@@ -135,6 +139,24 @@ export default class AdInflowModal {
     this._e = {}
   }
 
+  _handlePlayerError(o) {
+    let e = o
+
+    if (e.data) {
+      e = e.data
+    }
+
+    if (e.getError) {
+      e = e.getError()
+    }
+
+    if (e.toString) {
+      e = e.toString()
+    }
+
+    console.log('ad-inflow-modal:', e)
+  }
+
   _makeAdPlayer() {
     // Assumes "this._o.imaAdPlayer" is configuration object
     this._o.imaAdPlayer.video = this._e.adVideo
@@ -143,7 +165,7 @@ export default class AdInflowModal {
     ImaAdPlayer(this._o.imaAdPlayer, (player, error) => {
       if (error) {
         // Ad player creation failed
-        console.log(error)
+        this._o.logAdPlayerErrors && this._handlePlayerError(error)
         return this._destroy()
       }
 
@@ -181,13 +203,23 @@ export default class AdInflowModal {
       return this._destroy()
     }
 
+    if (this._o.logAdPlayerErrors) {
+      this._adPlayer.on('error', (o) => {
+        this._handlePlayerError(o)
+      })
+
+      this._adPlayer.on('ad_error', (o) => {
+        this._handlePlayerError(o)
+      })
+    }
+
     this._adPlayer.on('ad_end', (o) => {
       this._close()
     })
 
     if (autoplay) {
-      // Modal will show up on VAST "ad impression" event
-      this._adPlayer.on('impression', (o) => {
+      // Modal will show up on "ad play" ad player event
+      this._adPlayer.on('ad_play', (o) => {
         this._show()
         this._body.lock()
       })
@@ -230,7 +262,7 @@ export default class AdInflowModal {
     this._hideCloseButton()
     this._hide()
     this._body.unlock()
-    this._destroy(10000)
+    this._destroy(this._o.destroyTimeout)
   }
 
   _clearAllTimeout(next) {
@@ -245,10 +277,12 @@ export default class AdInflowModal {
 
   _destroy(delay = 0) {
     this._clearAllTimeout(() => {
-      this._t.destroy = setTimeout(() => {
-        this._removeModal()
-        this._destroyAdPlayer()
-      }, delay)
+      if (delay > -1) {
+        this._t.destroy = setTimeout(() => {
+          this._removeModal()
+          this._destroyAdPlayer()
+        }, delay)
+      }
     })
   }
 }
