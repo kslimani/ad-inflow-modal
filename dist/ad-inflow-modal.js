@@ -91,7 +91,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -232,15 +232,78 @@ function make(n) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.svg = exports.video = void 0;
+// dummy.js
+// Video: https://github.com/mathiasbynens/small
+var VIDEO = 'data:video/mp4;base64,AAAAHGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAC721kYXQhEAUgpBv/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3pwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcCEQBSCkG//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADengAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcAAAAsJtb292AAAAbG12aGQAAAAAAAAAAAAAAAAAAAPoAAAALwABAAABAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAB7HRyYWsAAABcdGtoZAAAAAMAAAAAAAAAAAAAAAIAAAAAAAAALwAAAAAAAAAAAAAAAQEAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAACRlZHRzAAAAHGVsc3QAAAAAAAAAAQAAAC8AAAAAAAEAAAAAAWRtZGlhAAAAIG1kaGQAAAAAAAAAAAAAAAAAAKxEAAAIAFXEAAAAAAAtaGRscgAAAAAAAAAAc291bgAAAAAAAAAAAAAAAFNvdW5kSGFuZGxlcgAAAAEPbWluZgAAABBzbWhkAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAADTc3RibAAAAGdzdHNkAAAAAAAAAAEAAABXbXA0YQAAAAAAAAABAAAAAAAAAAAAAgAQAAAAAKxEAAAAAAAzZXNkcwAAAAADgICAIgACAASAgIAUQBUAAAAAAfQAAAHz+QWAgIACEhAGgICAAQIAAAAYc3R0cwAAAAAAAAABAAAAAgAABAAAAAAcc3RzYwAAAAAAAAABAAAAAQAAAAIAAAABAAAAHHN0c3oAAAAAAAAAAAAAAAIAAAFzAAABdAAAABRzdGNvAAAAAAAAAAEAAAAsAAAAYnVkdGEAAABabWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAbWRpcmFwcGwAAAAAAAAAAAAAAAAtaWxzdAAAACWpdG9vAAAAHWRhdGEAAAABAAAAAExhdmY1Ni40MC4xMDE='; // SVG: https://commons.wikimedia.org/wiki/File:Solid_black.svg
+
+var SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxIDEiPjxwYXRoIGQ9Im0wLDB2MWgxVjAiPjwvcGF0aD48L3N2Zz4='; // base64toBlob: https://github.com/video-dev/can-autoplay
+
+function base64toBlob(base64) {
+  var base64Regex = /^data:([^;]+);base64,(.+)$/i;
+  var matches = base64.match(base64Regex);
+  var contentType = matches[1];
+  var base64Data = matches[2];
+  var sliceSize = 1024;
+  var byteCharacters = atob(base64Data);
+  var bytesLength = byteCharacters.length;
+  var slicesCount = Math.ceil(bytesLength / sliceSize);
+  var byteArrays = new Array(slicesCount);
+
+  for (var sliceIndex = 0; sliceIndex < slicesCount; ++sliceIndex) {
+    var begin = sliceIndex * sliceSize;
+    var end = Math.min(begin + sliceSize, bytesLength);
+    var bytes = new Array(end - begin);
+
+    for (var offset = begin, i = 0; offset < end; ++i, ++offset) {
+      bytes[i] = byteCharacters[offset].charCodeAt(0);
+    }
+
+    byteArrays[sliceIndex] = new Uint8Array(bytes);
+  }
+
+  return new Blob(byteArrays, {
+    type: contentType
+  });
+}
+
+function blobToObject(blob) {
+  return {
+    source: URL.createObjectURL(blob),
+    mimeType: blob.type
+  };
+}
+
+var _video = blobToObject(base64toBlob(VIDEO));
+
+var _svg = blobToObject(base64toBlob(SVG));
+
+var video = _video;
+exports.video = video;
+var svg = _svg;
+exports.svg = svg;
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 exports.default = void 0;
 
 var _dom = __webpack_require__(0);
 
-var _bodyLocker = _interopRequireDefault(__webpack_require__(2));
+var _dummy = __webpack_require__(1);
 
-var _detectMobile = _interopRequireDefault(__webpack_require__(3));
+var _bodyLocker = _interopRequireDefault(__webpack_require__(3));
 
-var _canAutoplay = _interopRequireDefault(__webpack_require__(4));
+var _detectMobile = _interopRequireDefault(__webpack_require__(4));
+
+var _canAutoplay = _interopRequireDefault(__webpack_require__(5));
 
 var _imaAdPlayer = _interopRequireDefault(__webpack_require__(6));
 
@@ -293,6 +356,8 @@ function () {
       o.closeButtonDelay || (o.closeButtonDelay = 5000);
       o.skipAdIfNoAutoplay || (o.skipAdIfNoAutoplay = false);
       o.canAutoplayTimeout || (o.canAutoplayTimeout = 1000);
+      o.logAdPlayerErrors || (o.logAdPlayerErrors = true);
+      o.destroyTimeout || (o.destroyTimeout = 10000);
 
       if (!o.imaAdPlayer) {
         throw new Error('AdInflowModal error: ima ad player configuration is missing');
@@ -362,7 +427,8 @@ function () {
       this._e.adVideo = (0, _dom.make)('video', {
         class: 'ad-inflow-video',
         attr: {
-          playsinline: null
+          playsinline: null,
+          poster: _dummy.svg.source
         }
       });
       this._e.adContainer = (0, _dom.make)('div', {
@@ -411,6 +477,25 @@ function () {
       this._e = {};
     }
   }, {
+    key: "_handlePlayerError",
+    value: function _handlePlayerError(o) {
+      var e = o;
+
+      if (e.data) {
+        e = e.data;
+      }
+
+      if (e.getError) {
+        e = e.getError();
+      }
+
+      if (e.toString) {
+        e = e.toString();
+      }
+
+      console.log('ad-inflow-modal:', e);
+    }
+  }, {
     key: "_makeAdPlayer",
     value: function _makeAdPlayer() {
       var _this3 = this;
@@ -421,7 +506,7 @@ function () {
       (0, _imaAdPlayer.default)(this._o.imaAdPlayer, function (player, error) {
         if (error) {
           // Ad player creation failed
-          console.log(error);
+          _this3._o.logAdPlayerErrors && _this3._handlePlayerError(error);
           return _this3._destroy();
         }
 
@@ -469,13 +554,23 @@ function () {
         return this._destroy();
       }
 
+      if (this._o.logAdPlayerErrors) {
+        this._adPlayer.on('error', function (o) {
+          _this5._handlePlayerError(o);
+        });
+
+        this._adPlayer.on('ad_error', function (o) {
+          _this5._handlePlayerError(o);
+        });
+      }
+
       this._adPlayer.on('ad_end', function (o) {
         _this5._close();
       });
 
       if (autoplay) {
-        // Modal will show up on VAST "ad impression" event
-        this._adPlayer.on('impression', function (o) {
+        // Modal will show up on "ad play" ad player event
+        this._adPlayer.on('ad_play', function (o) {
           _this5._show();
 
           _this5._body.lock();
@@ -534,7 +629,7 @@ function () {
 
       this._body.unlock();
 
-      this._destroy(10000);
+      this._destroy(this._o.destroyTimeout);
     }
   }, {
     key: "_clearAllTimeout",
@@ -556,11 +651,13 @@ function () {
       var delay = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
       this._clearAllTimeout(function () {
-        _this7._t.destroy = setTimeout(function () {
-          _this7._removeModal();
+        if (delay > -1) {
+          _this7._t.destroy = setTimeout(function () {
+            _this7._removeModal();
 
-          _this7._destroyAdPlayer();
-        }, delay);
+            _this7._destroyAdPlayer();
+          }, delay);
+        }
       });
     }
   }]);
@@ -572,7 +669,7 @@ exports.default = AdInflowModal;
 module.exports = exports.default;
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -630,7 +727,7 @@ exports.default = BodyLocker;
 module.exports = exports.default;
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -651,7 +748,7 @@ function detectMobile() {
 module.exports = exports.default;
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -664,9 +761,7 @@ exports.default = _default;
 
 var _dom = __webpack_require__(0);
 
-var _videoBlob = _interopRequireDefault(__webpack_require__(5));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _dummy = __webpack_require__(1);
 
 // can-autoplay.js
 // Create once the video element to avoid to set source each time can-autoplay function is called
@@ -675,7 +770,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var element = (0, _dom.make)('video', {
   attr: {
     playsinline: null,
-    src: (0, _videoBlob.default)().source
+    src: _dummy.video.source
   }
 });
 
@@ -701,61 +796,6 @@ function _default(cb) {
   } else {
     canAutoplay(true);
   }
-}
-
-module.exports = exports.default;
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = _default;
-// video-blob.js
-// Video: https://github.com/mathiasbynens/small
-var VIDEO = 'data:video/mp4;base64,AAAAHGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAC721kYXQhEAUgpBv/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3pwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcCEQBSCkG//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADengAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcAAAAsJtb292AAAAbG12aGQAAAAAAAAAAAAAAAAAAAPoAAAALwABAAABAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAB7HRyYWsAAABcdGtoZAAAAAMAAAAAAAAAAAAAAAIAAAAAAAAALwAAAAAAAAAAAAAAAQEAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAACRlZHRzAAAAHGVsc3QAAAAAAAAAAQAAAC8AAAAAAAEAAAAAAWRtZGlhAAAAIG1kaGQAAAAAAAAAAAAAAAAAAKxEAAAIAFXEAAAAAAAtaGRscgAAAAAAAAAAc291bgAAAAAAAAAAAAAAAFNvdW5kSGFuZGxlcgAAAAEPbWluZgAAABBzbWhkAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAADTc3RibAAAAGdzdHNkAAAAAAAAAAEAAABXbXA0YQAAAAAAAAABAAAAAAAAAAAAAgAQAAAAAKxEAAAAAAAzZXNkcwAAAAADgICAIgACAASAgIAUQBUAAAAAAfQAAAHz+QWAgIACEhAGgICAAQIAAAAYc3R0cwAAAAAAAAABAAAAAgAABAAAAAAcc3RzYwAAAAAAAAABAAAAAQAAAAIAAAABAAAAHHN0c3oAAAAAAAAAAAAAAAIAAAFzAAABdAAAABRzdGNvAAAAAAAAAAEAAAAsAAAAYnVkdGEAAABabWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAbWRpcmFwcGwAAAAAAAAAAAAAAAAtaWxzdAAAACWpdG9vAAAAHWRhdGEAAAABAAAAAExhdmY1Ni40MC4xMDE='; // base64toBlob: https://github.com/video-dev/can-autoplay
-
-function base64toBlob(base64) {
-  var base64Regex = /^data:([^;]+);base64,(.+)$/i;
-  var matches = base64.match(base64Regex);
-  var contentType = matches[1];
-  var base64Data = matches[2];
-  var sliceSize = 1024;
-  var byteCharacters = atob(base64Data);
-  var bytesLength = byteCharacters.length;
-  var slicesCount = Math.ceil(bytesLength / sliceSize);
-  var byteArrays = new Array(slicesCount);
-
-  for (var sliceIndex = 0; sliceIndex < slicesCount; ++sliceIndex) {
-    var begin = sliceIndex * sliceSize;
-    var end = Math.min(begin + sliceSize, bytesLength);
-    var bytes = new Array(end - begin);
-
-    for (var offset = begin, i = 0; offset < end; ++i, ++offset) {
-      bytes[i] = byteCharacters[offset].charCodeAt(0);
-    }
-
-    byteArrays[sliceIndex] = new Uint8Array(bytes);
-  }
-
-  return new Blob(byteArrays, {
-    type: contentType
-  });
-}
-
-var blob = base64toBlob(VIDEO);
-var sourceObj = {
-  source: URL.createObjectURL(blob),
-  mimeType: blob.type
-};
-
-function _default() {
-  return sourceObj;
 }
 
 module.exports = exports.default;
