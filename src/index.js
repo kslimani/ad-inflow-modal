@@ -110,12 +110,12 @@ export default class AdInflowModal {
       class: 'ad-inflow-overlay',
     })
 
-    this._e.adOverlayText = make('div', {
-      class: 'ad-inflow-overlay-text',
+    this._e.adOverlayIcon = make('div', {
+      class: 'ad-inflow-overlay-icon',
       html: playIcon,
     })
 
-    this._e.adOverlay.appendChild(this._e.adOverlayText)
+    this._e.adOverlay.appendChild(this._e.adOverlayIcon)
     this._e.adContainerVideo.appendChild(this._e.adVideo)
     this._e.ad.appendChild(this._e.adContainerVideo)
     this._e.ad.appendChild(this._e.adContainer)

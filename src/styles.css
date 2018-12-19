@@ -103,7 +103,7 @@
 .ad-inflow-overlay-show {
   visibility: visible;
 }
-.ad-inflow-overlay-text {
+.ad-inflow-overlay-icon {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
