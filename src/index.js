@@ -34,6 +34,7 @@ export default class AdInflowModal {
     o.canAutoplayTimeout || (o.canAutoplayTimeout = 1000)
     o.logAdPlayerErrors || (o.logAdPlayerErrors = true)
     o.destroyTimeout || (o.destroyTimeout = 10000)
+    o.openOnInteractionIfNoAutoplay || (o.openOnInteractionIfNoAutoplay = false)
 
     if (! o.imaAdPlayer) {
       throw new Error('AdInflowModal error: ima ad player configuration is missing')
@@ -154,7 +155,9 @@ export default class AdInflowModal {
       e = e.toString()
     }
 
-    console.log('ad-inflow-modal:', e)
+    try {
+      console.log('ad-inflow-modal:', e)
+    } catch(err) {}
   }
 
   _makeAdPlayer() {
@@ -226,6 +229,18 @@ export default class AdInflowModal {
 
       this._showCloseButton(this._o.closeButtonDelay)
       this._adPlayer.play()
+    } else if (this._o.openOnInteractionIfNoAutoplay) {
+      // Modal will show up on "ad play" ad player event
+      this._adPlayer.on('ad_play', (o) => {
+        this._show()
+        this._body.lock()
+      })
+
+      // Will attempt to play on user action
+      this._body.prevent(() => {
+        this._showCloseButton(this._o.closeButtonDelay)
+        this._adPlayer.play()
+      })
     } else {
       // Play must be done via a user action on mobile devices
       this._show()
