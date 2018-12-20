@@ -344,8 +344,6 @@ function () {
     this._onPlayIntent = function (e) {
       _this._hidePlayOverlay();
 
-      _this._showCloseButton(_this._o.closeButtonDelay);
-
       _this._adPlayer.play();
     };
   }
@@ -577,9 +575,9 @@ function () {
           _this5._show();
 
           _this5._body.lock();
-        });
 
-        this._showCloseButton(this._o.closeButtonDelay);
+          _this5._showCloseButton(_this5._o.closeButtonDelay);
+        });
 
         this._adPlayer.play();
       } else if (this._o.openOnInteractionIfNoAutoplay) {
@@ -588,16 +586,20 @@ function () {
           _this5._show();
 
           _this5._body.lock();
+
+          _this5._showCloseButton(_this5._o.closeButtonDelay);
         }); // Will attempt to play on user action
 
 
         this._body.prevent(function () {
-          _this5._showCloseButton(_this5._o.closeButtonDelay);
-
           _this5._adPlayer.play();
         });
       } else {
         // Play must be done via a user action on mobile devices
+        this._adPlayer.on('ad_play', function (o) {
+          _this5._showCloseButton(_this5._o.closeButtonDelay);
+        });
+
         this._show();
 
         this._body.lock();
