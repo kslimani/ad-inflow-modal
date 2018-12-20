@@ -26,7 +26,7 @@ if (process.env.npm_lifecycle_event === 'dist') {
 }
 
 plugins.push(new NotifierPlugin({
-  title: jsOutFile,
+  title: optimization.minimizer ? 'minified ' + name : name,
 }))
 
 plugins.push(new MiniCssExtractPlugin({
