@@ -17,6 +17,7 @@ var modal = new AdInflowModal({
   // skipAdIfNoAutoplay: true,
   // canAutoplayTimeout: 800,
   // logAdPlayerErrors: false,
+  // openOnInteractionIfNoAutoplay: true,
   imaAdPlayer: {
     tag: 'https://myadserver.com/path/to/vast/linear/tag.xml',
     vpaidMode: 2,
