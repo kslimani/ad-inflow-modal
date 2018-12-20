@@ -65,6 +65,12 @@
     height: 240px;
   }
 }
+@media only screen and (max-width: 375px) {
+  .ad-inflow-modal-content {
+    width: 352px;
+    height: 198px;
+  }
+}
 
 /* SVG close button */
 .ad-inflow-modal-close-circle {
@@ -111,7 +117,7 @@
 .ad-inflow-overlay-show {
   visibility: visible;
 }
-.ad-inflow-overlay-text {
+.ad-inflow-overlay-icon {
   position: absolute;
   top: 50%;
   -webkit-transform: translateY(-50%);

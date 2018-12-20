@@ -358,6 +358,7 @@ function () {
       o.canAutoplayTimeout || (o.canAutoplayTimeout = 1000);
       o.logAdPlayerErrors || (o.logAdPlayerErrors = true);
       o.destroyTimeout || (o.destroyTimeout = 10000);
+      o.openOnInteractionIfNoAutoplay || (o.openOnInteractionIfNoAutoplay = false);
 
       if (!o.imaAdPlayer) {
         throw new Error('AdInflowModal error: ima ad player configuration is missing');
@@ -437,12 +438,12 @@ function () {
       this._e.adOverlay = (0, _dom.make)('div', {
         class: 'ad-inflow-overlay'
       });
-      this._e.adOverlayText = (0, _dom.make)('div', {
-        class: 'ad-inflow-overlay-text',
+      this._e.adOverlayIcon = (0, _dom.make)('div', {
+        class: 'ad-inflow-overlay-icon',
         html: _play.default
       });
 
-      this._e.adOverlay.appendChild(this._e.adOverlayText);
+      this._e.adOverlay.appendChild(this._e.adOverlayIcon);
 
       this._e.adContainerVideo.appendChild(this._e.adVideo);
 
@@ -493,7 +494,9 @@ function () {
         e = e.toString();
       }
 
-      console.log('ad-inflow-modal:', e);
+      try {
+        console.log('ad-inflow-modal:', e);
+      } catch (err) {}
     }
   }, {
     key: "_makeAdPlayer",
@@ -579,6 +582,20 @@ function () {
         this._showCloseButton(this._o.closeButtonDelay);
 
         this._adPlayer.play();
+      } else if (this._o.openOnInteractionIfNoAutoplay) {
+        // Modal will show up on "ad play" ad player event
+        this._adPlayer.on('ad_play', function (o) {
+          _this5._show();
+
+          _this5._body.lock();
+        }); // Will attempt to play on user action
+
+
+        this._body.prevent(function () {
+          _this5._showCloseButton(_this5._o.closeButtonDelay);
+
+          _this5._adPlayer.play();
+        });
       } else {
         // Play must be done via a user action on mobile devices
         this._show();
@@ -692,13 +709,36 @@ var BodyLocker =
 /*#__PURE__*/
 function () {
   function BodyLocker() {
+    var _this = this;
+
     _classCallCheck(this, BodyLocker);
 
-    this._e = 'touchmove';
     this._c = 'ad-inflow-body';
+    this._el = 'touchmove';
+    this._ep = ['touchstart', 'wheel', 'mousedown'];
+
+    this._lock = function (e) {
+      e.preventDefault();
+    };
 
     this._prevent = function (e) {
       e.preventDefault();
+
+      if (_this._p) {
+        return;
+      }
+
+      _this._p = true;
+
+      _this._next();
+
+      _this._ep.forEach(function (e) {
+        document.body.removeEventListener(e, _this._prevent, {
+          capture: true,
+          passive: false,
+          once: true
+        });
+      });
     };
   }
 
@@ -706,7 +746,7 @@ function () {
     key: "lock",
     value: function lock() {
       (0, _dom.addOneClass)(document.body, this._c);
-      document.body.addEventListener(this._e, this._prevent, {
+      document.body.addEventListener(this._el, this._lock, {
         passive: false
       });
     }
@@ -714,8 +754,24 @@ function () {
     key: "unlock",
     value: function unlock() {
       (0, _dom.removeClass)(document.body, this._c);
-      document.body.removeEventListener(this._e, this._prevent, {
+      document.body.removeEventListener(this._el, this._lock, {
         passive: false
+      });
+    }
+  }, {
+    key: "prevent",
+    value: function prevent(next) {
+      var _this2 = this;
+
+      this._p = false;
+      this._next = next;
+
+      this._ep.forEach(function (e) {
+        document.body.addEventListener(e, _this2._prevent, {
+          capture: true,
+          passive: false,
+          once: true
+        });
       });
     }
   }]);
