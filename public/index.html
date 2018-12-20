@@ -4,16 +4,23 @@
     <meta name="viewport" content="width=655, user-scalable=yes" />
     <link rel="stylesheet" href="ad-inflow-modal.css">
     <script src="ad-inflow-modal.js"></script>
+    <style type="text/css">
+      .bt-test {
+        width: 200px;
+        height: 80px;
+        font-size: 2em;
+      }
+    </style>
   </head>
   <body>
     <script>
       (function () {
-
         var modal = new AdInflowModal({
           // closeButtonDelay: 3000,
           // skipAdIfNoAutoplay: true,
           // canAutoplayTimeout: 800,
           // logAdPlayerErrors: false,
+          openOnInteractionIfNoAutoplay: true,
           imaAdPlayer: {
             // debug: true
             tag: 'https://diffusepro.com/video-ad/vast/linear/vast2.xml',
@@ -30,7 +37,22 @@
 
     <div>
       <p>
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec in venenatis augue. Pellentesque eu elementum arcu, vel vestibulum tortor. Sed venenatis leo ac elementum tincidunt. Praesent eget risus vestibulum, imperdiet massa sit amet, faucibus justo. Pellentesque tincidunt turpis neque, non maximus massa hendrerit vitae. Integer ut ornare risus. Mauris in turpis ac urna mattis semper. In hac habitasse platea dictumst. Phasellus in turpis vulputate, fringilla libero id, dictum libero. Sed sagittis, mauris quis lobortis consequat, nulla quam congue diam, gravida aliquam metus risus a ante. Nunc maximus at massa a semper. Sed laoreet erat justo, vestibulum porta ipsum feugiat eget. Cras hendrerit mollis ex ultrices sagittis. Maecenas eget convallis sapien. Curabitur urna massa, eleifend vel ornare sit amet, ornare vel mauris.
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec in venenatis augue. Pellentesque eu elementum arcu, vel vestibulum tortor. Sed venenatis leo ac elementum tincidunt. Praesent eget risus vestibulum, imperdiet massa sit amet, faucibus justo. Pellentesque tincidunt turpis neque, non maximus massa hendrerit vitae. Integer ut ornare risus. Mauris in turpis ac urna mattis semper. In hac habitasse platea dictumst.
+      </p>
+
+      <button class="bt-test">Test</button>
+      <script>
+        (function () {
+          document
+            .querySelector('.bt-test')
+            .addEventListener('click', function() {
+              alert('button clicked !');
+            });
+        })();
+      </script>
+
+      <p>
+      Phasellus in turpis vulputate, fringilla libero id, dictum libero. Sed sagittis, mauris quis lobortis consequat, nulla quam congue diam, gravida aliquam metus risus a ante. Nunc maximus at massa a semper. Sed laoreet erat justo, vestibulum porta ipsum feugiat eget. Cras hendrerit mollis ex ultrices sagittis. Maecenas eget convallis sapien. Curabitur urna massa, eleifend vel ornare sit amet, ornare vel mauris.
       </p>
 
       <p>
