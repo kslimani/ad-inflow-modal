@@ -215,37 +215,31 @@ export default class AdInflowModal {
       })
     }
 
+    this._adPlayer.on('started', (o) => {
+      this._showCloseButton(this._o.closeButtonDelay)
+    })
+
     this._adPlayer.on('ad_end', (o) => {
       this._close()
     })
 
-    if (autoplay) {
+    if (autoplay || this._o.openOnInteractionIfNoAutoplay) {
       // Modal will show up on "ad play" ad player event
       this._adPlayer.on('ad_play', (o) => {
         this._show()
         this._body.lock()
-        this._showCloseButton(this._o.closeButtonDelay)
       })
+    }
 
+    if (autoplay) {
       this._adPlayer.play()
     } else if (this._o.openOnInteractionIfNoAutoplay) {
-      // Modal will show up on "ad play" ad player event
-      this._adPlayer.on('ad_play', (o) => {
-        this._show()
-        this._body.lock()
-        this._showCloseButton(this._o.closeButtonDelay)
-      })
-
       // Will attempt to play on user action
       this._body.prevent(() => {
         this._adPlayer.play()
       })
     } else {
-      // Play must be done via a user action on mobile devices
-      this._adPlayer.on('ad_play', (o) => {
-        this._showCloseButton(this._o.closeButtonDelay)
-      })
-
+      // Play must be done via a user action
       this._show()
       this._body.lock()
       this._showPlayOverlay()
