@@ -565,41 +565,32 @@ function () {
         });
       }
 
+      this._adPlayer.on('started', function (o) {
+        _this5._showCloseButton(_this5._o.closeButtonDelay);
+      });
+
       this._adPlayer.on('ad_end', function (o) {
         _this5._close();
       });
 
-      if (autoplay) {
+      if (autoplay || this._o.openOnInteractionIfNoAutoplay) {
         // Modal will show up on "ad play" ad player event
         this._adPlayer.on('ad_play', function (o) {
           _this5._show();
 
           _this5._body.lock();
-
-          _this5._showCloseButton(_this5._o.closeButtonDelay);
         });
+      }
 
+      if (autoplay) {
         this._adPlayer.play();
       } else if (this._o.openOnInteractionIfNoAutoplay) {
-        // Modal will show up on "ad play" ad player event
-        this._adPlayer.on('ad_play', function (o) {
-          _this5._show();
-
-          _this5._body.lock();
-
-          _this5._showCloseButton(_this5._o.closeButtonDelay);
-        }); // Will attempt to play on user action
-
-
+        // Will attempt to play on user action
         this._body.prevent(function () {
           _this5._adPlayer.play();
         });
       } else {
-        // Play must be done via a user action on mobile devices
-        this._adPlayer.on('ad_play', function (o) {
-          _this5._showCloseButton(_this5._o.closeButtonDelay);
-        });
-
+        // Play must be done via a user action
         this._show();
 
         this._body.lock();
@@ -707,6 +698,8 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+var isiPad = navigator.userAgent.match(/iPad/i) != null;
+
 var BodyLocker =
 /*#__PURE__*/
 function () {
@@ -717,13 +710,22 @@ function () {
 
     this._c = 'ad-inflow-body';
     this._el = 'touchmove';
-    this._ep = ['touchstart', 'wheel', 'mousedown'];
+    this._ep = ['touch', 'touchstart', 'touchmove', 'touchcancel'];
+    this._en = ['touchend', 'mousedown'];
+
+    if (isiPad) {
+      this._en.unshift('touchstart');
+    }
 
     this._lock = function (e) {
       e.preventDefault();
     };
 
     this._prevent = function (e) {
+      e.preventDefault();
+    };
+
+    this._prevented = function (e) {
       e.preventDefault();
 
       if (_this._p) {
@@ -733,6 +735,14 @@ function () {
       _this._p = true;
 
       _this._next();
+
+      _this._en.forEach(function (e) {
+        document.body.removeEventListener(e, _this._prevented, {
+          capture: true,
+          passive: false,
+          once: true
+        });
+      });
 
       _this._ep.forEach(function (e) {
         document.body.removeEventListener(e, _this._prevent, {
@@ -767,6 +777,14 @@ function () {
 
       this._p = false;
       this._next = next;
+
+      this._en.forEach(function (e) {
+        document.body.addEventListener(e, _this2._prevented, {
+          capture: true,
+          passive: false,
+          once: true
+        });
+      });
 
       this._ep.forEach(function (e) {
         document.body.addEventListener(e, _this2._prevent, {
