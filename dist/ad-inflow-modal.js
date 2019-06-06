@@ -201,8 +201,8 @@ function make(n) {
   var o = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   var e = document.createElement(n);
 
-  if (o.class) {
-    e = addClass(e, o.class);
+  if (o["class"]) {
+    e = addClass(e, o["class"]);
   }
 
   if (o.text) {
@@ -293,7 +293,7 @@ exports.svg = svg;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _dom = __webpack_require__(0);
 
@@ -313,7 +313,7 @@ var _close2 = _interopRequireDefault(__webpack_require__(8));
 
 var _play = _interopRequireDefault(__webpack_require__(9));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -321,7 +321,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var isMobile = (0, _detectMobile.default)();
+var isMobile = (0, _detectMobile["default"])();
 
 var AdInflowModal =
 /*#__PURE__*/
@@ -333,7 +333,7 @@ function () {
 
     this._e = {};
     this._t = {};
-    this._body = new _bodyLocker.default();
+    this._body = new _bodyLocker["default"]();
 
     this._configure(options);
 
@@ -405,40 +405,40 @@ function () {
       }
 
       this._e.modal = (0, _dom.make)('div', {
-        class: 'ad-inflow-modal'
+        "class": 'ad-inflow-modal'
       });
       this._e.content = (0, _dom.make)('div', {
-        class: 'ad-inflow-modal-content'
+        "class": 'ad-inflow-modal-content'
       });
       this._e.close = (0, _dom.make)('span', {
-        class: 'ad-inflow-modal-close',
-        html: _close2.default
+        "class": 'ad-inflow-modal-close',
+        html: _close2["default"]
       });
 
       this._e.modal.appendChild(this._e.content);
 
       this._e.ad = (0, _dom.make)('div', {
-        class: 'ad-inflow'
+        "class": 'ad-inflow'
       });
       this._e.adContainerVideo = (0, _dom.make)('div', {
-        class: 'ad-inflow-container-video'
+        "class": 'ad-inflow-container-video'
       });
       this._e.adVideo = (0, _dom.make)('video', {
-        class: 'ad-inflow-video',
+        "class": 'ad-inflow-video',
         attr: {
           playsinline: null,
           poster: _dummy.svg.source
         }
       });
       this._e.adContainer = (0, _dom.make)('div', {
-        class: 'ad-inflow-container'
+        "class": 'ad-inflow-container'
       });
       this._e.adOverlay = (0, _dom.make)('div', {
-        class: 'ad-inflow-overlay'
+        "class": 'ad-inflow-overlay'
       });
       this._e.adOverlayIcon = (0, _dom.make)('div', {
-        class: 'ad-inflow-overlay-icon',
-        html: _play.default
+        "class": 'ad-inflow-overlay-icon',
+        html: _play["default"]
       });
 
       this._e.adOverlay.appendChild(this._e.adOverlayIcon);
@@ -504,7 +504,7 @@ function () {
       // Assumes "this._o.imaAdPlayer" is configuration object
       this._o.imaAdPlayer.video = this._e.adVideo;
       this._o.imaAdPlayer.displayContainer = this._e.adContainer;
-      (0, _imaAdPlayer.default)(this._o.imaAdPlayer, function (player, error) {
+      (0, _imaAdPlayer["default"])(this._o.imaAdPlayer, function (player, error) {
         if (error) {
           // Ad player creation failed
           _this3._o.logAdPlayerErrors && _this3._handlePlayerError(error);
@@ -531,7 +531,7 @@ function () {
       if (isMobile) {
         this._open(false);
       } else {
-        (0, _canAutoplay.default)(function (result, error) {
+        (0, _canAutoplay["default"])(function (result, error) {
           _this4._open(result);
         }, timeout);
       }
@@ -675,7 +675,7 @@ function () {
   return AdInflowModal;
 }();
 
-exports.default = AdInflowModal;
+exports["default"] = AdInflowModal;
 module.exports = exports.default;
 
 /***/ }),
@@ -688,7 +688,7 @@ module.exports = exports.default;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _dom = __webpack_require__(0);
 
@@ -799,7 +799,7 @@ function () {
   return BodyLocker;
 }();
 
-exports.default = BodyLocker;
+exports["default"] = BodyLocker;
 module.exports = exports.default;
 
 /***/ }),
@@ -812,7 +812,7 @@ module.exports = exports.default;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = detectMobile;
+exports["default"] = detectMobile;
 
 // detect-mobile.js
 // Regular Expression: http://detectmobilebrowsers.com/
@@ -833,7 +833,7 @@ module.exports = exports.default;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = _default;
+exports["default"] = _default;
 
 var _dom = __webpack_require__(0);
 
@@ -866,7 +866,7 @@ function _default(cb) {
   if (promise !== undefined) {
     promise.then(function () {
       return canAutoplay(true);
-    }).catch(function (err) {
+    })["catch"](function (err) {
       return canAutoplay(false, err);
     });
   } else {
