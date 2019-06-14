@@ -14,16 +14,16 @@ const element = make('video', {
 })
 
 export default function (cb, timeout = 500) {
-  let promise = element.play()
+  let canAutoplay = (result, error = null) => {
+    clearTimeout(timeoutId)
+    cb(result, error)
+  }
 
   let timeoutId = setTimeout(() => {
     canAutoplay(false, new Error('Timeout ' + timeout + ' ms has been reached'))
   }, timeout)
 
-  let canAutoplay = (result, error = null) => {
-    clearTimeout(timeoutId)
-    cb(result, error)
-  }
+  let promise = element.play()
 
   if (promise !== undefined) {
     promise
