@@ -1,5 +1,5 @@
 import { make, el, addOneClass, removeClass } from './dom'
-import { svg } from './dummy'
+import { svg, video } from './dummy'
 import BodyLocker from './body-locker'
 import detectMobile from './detect-mobile'
 import canAutoPlay from './can-autoplay'
@@ -98,6 +98,7 @@ export default class AdInflowModal {
       class: 'ad-inflow-video',
       attr: {
         playsinline: null,
+        src: video.source,
         poster: svg.source,
       },
     })
@@ -224,8 +225,8 @@ export default class AdInflowModal {
     })
 
     if (autoplay || this._o.openOnInteractionIfNoAutoplay) {
-      // Modal will show up on "ad play" ad player event
-      this._adPlayer.on('ad_play', (o) => {
+      // Modal will show up on "ad begin" ad player event
+      this._adPlayer.on('ad_begin', (o) => {
         this._show()
         this._body.lock()
       })
