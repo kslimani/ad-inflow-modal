@@ -206,6 +206,10 @@ export default class AdInflowModal {
       return this._destroy()
     }
 
+    if (! autoplay && this._o.requestAdIfNoAutoplay) {
+      this._adPlayer.request()
+    }
+
     if (this._o.logAdPlayerErrors) {
       this._adPlayer.on('error', (o) => {
         this._handlePlayerError(o)
