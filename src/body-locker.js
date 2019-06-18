@@ -2,25 +2,26 @@
 
 import { addOneClass, removeClass } from './dom'
 
-let isiPad = navigator.userAgent.match(/iPad/i) != null
+let isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
 
 export default class BodyLocker {
   constructor() {
-    this._c = 'ad-inflow-body'
-    this._el = 'touchmove'
-    this._ep = [
+    this._class = 'ad-inflow-body'
+    this._lockEvents = 'touchmove'
+    this._preventEvents = [
       'touch',
       'touchstart',
       'touchmove',
       'touchcancel',
     ]
-    this._en = [
+    this._preventedEvents = [
       'touchend',
       'mousedown',
     ]
 
-    if (isiPad) {
-      this._en.unshift('touchstart')
+    if (isiOS) {
+      // "touchend" event is not a user interaction on iOS
+      this._preventedEvents.unshift('touchstart')
     }
 
     this._lock = (e) => {
@@ -32,21 +33,21 @@ export default class BodyLocker {
     this._prevented = (e) => {
       e.preventDefault()
 
-      if (this._p) {
+      if (this._isPrevented) {
         return
       }
 
-      this._p = true
+      this._isPrevented = true
       this._next()
 
-      this._en.forEach((e) => {
+      this._preventedEvents.forEach((e) => {
         document.body.removeEventListener(e, this._prevented, {
           capture: true,
           passive: false,
           once: true,
         })
       })
-      this._ep.forEach((e) => {
+      this._preventEvents.forEach((e) => {
         document.body.removeEventListener(e, this._prevent, {
           capture: true,
           passive: false,
@@ -57,30 +58,30 @@ export default class BodyLocker {
   }
 
   lock() {
-    addOneClass(document.body, this._c)
-    document.body.addEventListener(this._el, this._lock, {
+    addOneClass(document.body, this._class)
+    document.body.addEventListener(this._lockEvents, this._lock, {
       passive: false,
     })
   }
 
   unlock() {
-    removeClass(document.body, this._c)
-    document.body.removeEventListener(this._el, this._lock, {
+    removeClass(document.body, this._class)
+    document.body.removeEventListener(this._lockEvents, this._lock, {
       passive: false,
     })
   }
 
   prevent(next) {
-    this._p = false
+    this._isPrevented = false
     this._next = next
-    this._en.forEach((e) => {
+    this._preventedEvents.forEach((e) => {
       document.body.addEventListener(e, this._prevented, {
         capture: true,
         passive: false,
         once: true,
       })
     })
-    this._ep.forEach((e) => {
+    this._preventEvents.forEach((e) => {
       document.body.addEventListener(e, this._prevent, {
         capture: true,
         passive: false,
