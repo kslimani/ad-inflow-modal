@@ -427,6 +427,7 @@ function () {
         "class": 'ad-inflow-video',
         attr: {
           playsinline: null,
+          src: _dummy.video.source,
           poster: _dummy.svg.source
         }
       });
@@ -555,6 +556,10 @@ function () {
         return this._destroy();
       }
 
+      if (!autoplay && this._o.requestAdIfNoAutoplay) {
+        this._adPlayer.request();
+      }
+
       if (this._o.logAdPlayerErrors) {
         this._adPlayer.on('error', function (o) {
           _this5._handlePlayerError(o);
@@ -574,8 +579,8 @@ function () {
       });
 
       if (autoplay || this._o.openOnInteractionIfNoAutoplay) {
-        // Modal will show up on "ad play" ad player event
-        this._adPlayer.on('ad_play', function (o) {
+        // Modal will show up on "ad begin" ad player event
+        this._adPlayer.on('ad_begin', function (o) {
           _this5._show();
 
           _this5._body.lock();
@@ -698,7 +703,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var isiPad = navigator.userAgent.match(/iPad/i) != null;
+var isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
 var BodyLocker =
 /*#__PURE__*/
@@ -708,13 +713,14 @@ function () {
 
     _classCallCheck(this, BodyLocker);
 
-    this._c = 'ad-inflow-body';
-    this._el = 'touchmove';
-    this._ep = ['touch', 'touchstart', 'touchmove', 'touchcancel'];
-    this._en = ['touchend', 'mousedown'];
+    this._class = 'ad-inflow-body';
+    this._lockEvents = 'touchmove';
+    this._preventEvents = ['touch', 'touchstart', 'touchmove', 'touchcancel'];
+    this._preventedEvents = ['touchend', 'mousedown'];
 
-    if (isiPad) {
-      this._en.unshift('touchstart');
+    if (isiOS) {
+      // "touchend" event is not a user interaction on iOS
+      this._preventedEvents.unshift('touchstart');
     }
 
     this._lock = function (e) {
@@ -728,15 +734,15 @@ function () {
     this._prevented = function (e) {
       e.preventDefault();
 
-      if (_this._p) {
+      if (_this._isPrevented) {
         return;
       }
 
-      _this._p = true;
+      _this._isPrevented = true;
 
       _this._next();
 
-      _this._en.forEach(function (e) {
+      _this._preventedEvents.forEach(function (e) {
         document.body.removeEventListener(e, _this._prevented, {
           capture: true,
           passive: false,
@@ -744,7 +750,7 @@ function () {
         });
       });
 
-      _this._ep.forEach(function (e) {
+      _this._preventEvents.forEach(function (e) {
         document.body.removeEventListener(e, _this._prevent, {
           capture: true,
           passive: false,
@@ -757,16 +763,16 @@ function () {
   _createClass(BodyLocker, [{
     key: "lock",
     value: function lock() {
-      (0, _dom.addOneClass)(document.body, this._c);
-      document.body.addEventListener(this._el, this._lock, {
+      (0, _dom.addOneClass)(document.body, this._class);
+      document.body.addEventListener(this._lockEvents, this._lock, {
         passive: false
       });
     }
   }, {
     key: "unlock",
     value: function unlock() {
-      (0, _dom.removeClass)(document.body, this._c);
-      document.body.removeEventListener(this._el, this._lock, {
+      (0, _dom.removeClass)(document.body, this._class);
+      document.body.removeEventListener(this._lockEvents, this._lock, {
         passive: false
       });
     }
@@ -775,10 +781,10 @@ function () {
     value: function prevent(next) {
       var _this2 = this;
 
-      this._p = false;
+      this._isPrevented = false;
       this._next = next;
 
-      this._en.forEach(function (e) {
+      this._preventedEvents.forEach(function (e) {
         document.body.addEventListener(e, _this2._prevented, {
           capture: true,
           passive: false,
@@ -786,7 +792,7 @@ function () {
         });
       });
 
-      this._ep.forEach(function (e) {
+      this._preventEvents.forEach(function (e) {
         document.body.addEventListener(e, _this2._prevent, {
           capture: true,
           passive: false,
@@ -852,16 +858,17 @@ var element = (0, _dom.make)('video', {
 
 function _default(cb) {
   var timeout = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 500;
-  var promise = element.play();
-  var timeoutId = setTimeout(function () {
-    canAutoplay(false, new Error('Timeout ' + timeout + ' ms has been reached'));
-  }, timeout);
 
   var canAutoplay = function canAutoplay(result) {
     var error = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     clearTimeout(timeoutId);
     cb(result, error);
   };
+
+  var timeoutId = setTimeout(function () {
+    canAutoplay(false, new Error('Timeout ' + timeout + ' ms has been reached'));
+  }, timeout);
+  var promise = element.play();
 
   if (promise !== undefined) {
     promise.then(function () {
@@ -1008,7 +1015,7 @@ function makeDefault(value, defaultValue) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = _default;
+exports["default"] = _default;
 
 var _imaLoader = _interopRequireDefault(__webpack_require__(2));
 
@@ -1016,16 +1023,16 @@ var _imaPlayer = _interopRequireDefault(__webpack_require__(3));
 
 var _utils = __webpack_require__(0);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 // IMA ad player factory
 function _default(options, cb) {
-  (0, _imaLoader.default)(function (success) {
+  (0, _imaLoader["default"])(function (success) {
     if (!success) {
       return cb(null, new Error('Failed to load IMA SDK'));
     }
 
-    cb(new _imaPlayer.default(options), null);
+    cb(new _imaPlayer["default"](options), null);
   }, (0, _utils.makeNum)(options.timemout, 6000), !!options.debug);
 }
 
@@ -1041,7 +1048,7 @@ module.exports = exports.default;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = _default;
+exports["default"] = _default;
 
 // ima-loader.js
 function _default(cb) {
@@ -1089,13 +1096,13 @@ module.exports = exports.default;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _utils = __webpack_require__(0);
 
 var _observable = _interopRequireDefault(__webpack_require__(4));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -1111,7 +1118,9 @@ function () {
 
     this._configure(options);
 
-    this._evt = new _observable.default(); // https://developers.google.com/interactive-media-ads/docs/sdks/html5/v3/apis#ima.ImaSdkSettings.setVpaidMode
+    this._evt = new _observable["default"]();
+    this._adRequesting = false;
+    this._adRequested = false; // https://developers.google.com/interactive-media-ads/docs/sdks/html5/v3/apis#ima.ImaSdkSettings.setVpaidMode
 
     google.ima.settings.setVpaidMode(this._vpaidMode); // https://developers.google.com/interactive-media-ads/docs/sdks/html5/v3/apis#ima.ImaSdkSettings.setLocale
 
@@ -1136,13 +1145,26 @@ function () {
 
       if (o.maxDuration) {
         this._o.maxDuration = (0, _utils.makeNum)(o.maxDuration, undefined);
-      } // Assumes by default that the playback is consented by user
+      } // Default is undefined or object
 
+
+      this._o.adsRequestOptions = o.adsRequestOptions; // Default is undefined or object
+
+      this._o.adsRenderingOptions = o.adsRenderingOptions; // Default is to let IMA SDK handle non-linear display duration
+
+      this._o.nonLinearMaxDuration = (0, _utils.makeNum)(o.nonLinearMaxDuration, -1); // Assumes by default that the playback is consented by user
 
       this._o.adWillAutoPlay = !!(0, _utils.makeDefault)(o.adWillAutoPlay, true);
       this._o.adWillPlayMuted = !!(0, _utils.makeDefault)(o.adWillPlayMuted, false); // Default is to tell the SDK NOT to save and restore content video state
 
       this._o.restoreVideo = !!(0, _utils.makeDefault)(o.restoreVideo, false);
+    }
+  }, {
+    key: "_setProperties",
+    value: function _setProperties(target, properties) {
+      for (var prop in properties) {
+        target[prop] && (target[prop] = properties[prop]);
+      }
     }
   }, {
     key: "on",
@@ -1163,16 +1185,22 @@ function () {
   }, {
     key: "play",
     value: function play() {
+      var _this = this;
+
       this._dispatch('ad_play_intent');
 
-      if (this._o.video && this._o.video.load) {
-        this._o.video.load();
-      } // Must be done via a user action on mobile devices
+      this._adPlayIntent = true;
 
+      this._userInteraction(function () {
+        _this._requestAd();
+      });
+    }
+  }, {
+    key: "request",
+    value: function request(options) {
+      this._dispatch('ad_request_intent', options);
 
-      this._adDisplayContainer.initialize();
-
-      this._requestAd();
+      this._requestAd(options);
     }
   }, {
     key: "resize",
@@ -1191,35 +1219,151 @@ function () {
       }
     }
   }, {
+    key: "setAdWillAutoPlay",
+    value: function setAdWillAutoPlay(autoPlay) {
+      this._o.adWillAutoPlay = autoPlay;
+    }
+  }, {
+    key: "setAdWillPlayMuted",
+    value: function setAdWillPlayMuted(muted) {
+      this._o.adWillPlayMuted = muted;
+    }
+  }, {
+    key: "stop",
+    value: function stop() {
+      this._dispatch('ad_stop_intent');
+
+      this._stop();
+    }
+  }, {
+    key: "ended",
+    value: function ended() {
+      // Signals the video content is finished.
+      // This will allow to play post-roll ads (if any)
+      this._adsLoader && this._adsLoader.contentComplete();
+    }
+  }, {
+    key: "initAdDisplayContainer",
+    value: function initAdDisplayContainer() {
+      // Must be done via a user interaction
+      this._adDisplayContainer.initialize();
+    }
+  }, {
+    key: "destroy",
+    value: function destroy() {
+      var unsubscribeEvents = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+      if (!this._end) {
+        this._resetMaxDurationTimer();
+
+        unsubscribeEvents && this._evt.unsubscribeAll();
+        this._adsManager && this._adsManager.stop();
+      }
+
+      this._destroyAdsManager();
+
+      this._adsLoader && this._adsLoader.destroy();
+      this._adDisplayContainer && this._adDisplayContainer.destroy();
+    }
+  }, {
+    key: "_userInteraction",
+    value: function _userInteraction(next) {
+      var _this2 = this;
+
+      this.initAdDisplayContainer();
+
+      if (!this._o.video.load) {
+        next();
+      }
+
+      var eh = function eh() {
+        _this2._o.video.removeEventListener('loadedmetadata', eh, false);
+
+        _this2._o.video.removeEventListener('error', eh, false);
+
+        next();
+      }; // Enable video element to "capture" user interaction
+
+
+      this._o.video.addEventListener('loadedmetadata', eh, false);
+
+      this._o.video.addEventListener('error', eh, false);
+
+      this._o.video.load();
+    }
+  }, {
+    key: "_stop",
+    value: function _stop() {
+      this._dispatch('ad_stop');
+
+      if (this._adsManager) {
+        // Signal ads manager to stop and get back to content
+        this._adsManager.stop();
+      } else {
+        this._endAd();
+      }
+    }
+  }, {
     key: "_makeAdsLoader",
     value: function _makeAdsLoader() {
-      var _this = this;
+      var _this3 = this;
 
       this._adsLoader = new google.ima.AdsLoader(this._adDisplayContainer);
 
       this._adsLoader.addEventListener(google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED, function (e) {
-        _this._onAdsManagerLoaded(e);
+        _this3._onAdsManagerLoaded(e);
       });
 
       this._adsLoader.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, function (e) {
-        _this._onAdError(e);
+        _this3._onAdError(e);
       });
     }
   }, {
     key: "_requestAd",
-    value: function _requestAd() {
+    value: function _requestAd(options) {
+      this._end = false; // Check if ad request is pending
+
+      if (this._adRequesting) {
+        // Ad will autostart if play method called
+        return;
+      } // Check if ad already requested (pre-request)
+
+
+      if (this._adRequested) {
+        // Start ad only if play method called
+        if (this._adPlayIntent) {
+          this._playAd();
+        }
+
+        return;
+      }
+
+      this._adRequesting = true;
+
       if (!this._adsLoader) {
         this._makeAdsLoader();
       }
 
-      var adsRequest = new google.ima.AdsRequest();
+      var adsRequest = new google.ima.AdsRequest(); // Set ad request default settings
+
       adsRequest.adTagUrl = this._o.tag;
       adsRequest.linearAdSlotWidth = this._o.video.offsetWidth;
       adsRequest.linearAdSlotHeight = this._o.video.offsetHeight;
       adsRequest.nonLinearAdSlotWidth = this._o.video.offsetWidth;
       adsRequest.nonLinearAdSlotHeight = this._o.video.offsetHeight;
       adsRequest.setAdWillAutoPlay(this._o.adWillAutoPlay);
-      adsRequest.setAdWillPlayMuted(this._o.adWillPlayMuted); // The requestAds() method triggers _onAdsManagerLoaded() or _onAdError()
+      adsRequest.setAdWillPlayMuted(this._o.adWillPlayMuted); // Assumes that ad request options is an object with ads request properties
+      // defined in the IMA SDK documentation (will override default settings)
+      // https://developers.google.com/interactive-media-ads/docs/sdks/html5/v3/apis#ima.AdsRequest
+
+      var adsRequestOptions = options ? options : this._o.adsRequestOptions;
+
+      if (adsRequestOptions) {
+        this._setProperties(adsRequest, adsRequestOptions);
+      }
+
+      this._dispatch('ad_request', adsRequest); // The requestAds() method triggers _onAdsManagerLoaded() or _onAdError()
+
 
       this._adsLoader.requestAds(adsRequest);
     }
@@ -1235,110 +1379,123 @@ function () {
   }, {
     key: "_bindAdsManagerEvents",
     value: function _bindAdsManagerEvents() {
-      var _this2 = this;
+      var _this4 = this;
 
       this._adsManager.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, function (e) {
-        _this2._onAdError(e);
+        _this4._onAdError(e);
       });
 
-      this._adsManager.addEventListener(google.ima.AdEvent.Type.CONTENT_RESUME_REQUESTED, function () {
-        _this2._dispatch('content_resume_requested');
+      this._adsManager.addEventListener(google.ima.AdEvent.Type.CONTENT_PAUSE_REQUESTED, function (e) {
+        _this4._end = false;
 
-        _this2._endAd();
+        _this4._dispatch('content_pause_requested', e);
+
+        _this4._dispatch('ad_begin'); // "content_pause_requested" event alias
+
       });
 
-      this._adsManager.addEventListener(google.ima.AdEvent.Type.CONTENT_PAUSE_REQUESTED, function () {
-        _this2._dispatch('content_pause_requested');
-      });
+      this._adsManager.addEventListener(google.ima.AdEvent.Type.CONTENT_RESUME_REQUESTED, function (e) {
+        _this4._dispatch('content_resume_requested', e);
 
-      this._adsManager.addEventListener(google.ima.AdEvent.Type.LOADED, function () {
-        _this2._dispatch('loaded');
-      });
-
-      this._adsManager.addEventListener(google.ima.AdEvent.Type.CLICK, function () {
-        _this2._dispatch('click');
-      });
-
-      this._adsManager.addEventListener(google.ima.AdEvent.Type.IMPRESSION, function () {
-        _this2._dispatch('impression');
+        _this4._endAd();
       });
 
       this._adsManager.addEventListener(google.ima.AdEvent.Type.STARTED, function (e) {
-        if (!e.getAd().isLinear()) {
-          _this2._dispatch('error', new Error('Non-linear ad is not supported'));
+        _this4._dispatch('started', e);
 
-          return _this2.stop();
+        var ad = e.getAd();
+
+        if (ad.isLinear()) {
+          _this4._o.maxDuration && _this4._startMaxDurationTimer();
         } else {
-          _this2._o.maxDuration && _this2._startMaxDurationTimer();
+          // Signal non-linear ad scenario
+          var duration = _this4._o.nonLinearMaxDuration;
+
+          _this4._dispatch('ad_non_linear', {
+            ad: ad,
+            duration: duration
+          }); // By default, IMA SDK will automatically close non-linear ad (after 45 seconds ?)
+
+
+          if (_this4._o.nonLinearMaxDuration > 0) {
+            setTimeout(function () {
+              _this4._adsManager && _this4._adsManager.stop();
+            }, _this4._o.nonLinearMaxDuration);
+          } // Ends to play/resume content video
+
+
+          _this4._endAd();
         }
-
-        _this2._dispatch('started');
       });
 
-      this._adsManager.addEventListener(google.ima.AdEvent.Type.FIRST_QUARTILE, function () {
-        _this2._dispatch('first_quartile');
-      });
+      var adEvents = {
+        'ad_break_ready': google.ima.AdEvent.Type.AD_BREAK_READY,
+        'ad_buffering': google.ima.AdEvent.Type.AD_BUFFERING,
+        'ad_metadata': google.ima.AdEvent.Type.AD_METADATA,
+        'ad_progress': google.ima.AdEvent.Type.AD_PROGRESS,
+        'all_ads_completed': google.ima.AdEvent.Type.ALL_ADS_COMPLETED,
+        'click': google.ima.AdEvent.Type.CLICK,
+        'complete': google.ima.AdEvent.Type.COMPLETE,
+        'duration_change': google.ima.AdEvent.Type.DURATION_CHANGE,
+        'first_quartile': google.ima.AdEvent.Type.FIRST_QUARTILE,
+        'impression': google.ima.AdEvent.Type.IMPRESSION,
+        'interaction': google.ima.AdEvent.Type.INTERACTION,
+        'linear_changed': google.ima.AdEvent.Type.LINEAR_CHANGED,
+        'loaded': google.ima.AdEvent.Type.LOADED,
+        'log': google.ima.AdEvent.Type.LOG,
+        'midpoint': google.ima.AdEvent.Type.MIDPOINT,
+        'paused': google.ima.AdEvent.Type.PAUSED,
+        'resumed': google.ima.AdEvent.Type.RESUMED,
+        'skippable_state_changed': google.ima.AdEvent.Type.SKIPPABLE_STATE_CHANGED,
+        'skipped': google.ima.AdEvent.Type.SKIPPED,
+        'third_quartile': google.ima.AdEvent.Type.THIRD_QUARTILE,
+        'user_close': google.ima.AdEvent.Type.USER_CLOSE,
+        'volume_changed': google.ima.AdEvent.Type.VOLUME_CHANGED,
+        'volume_muted': google.ima.AdEvent.Type.VOLUME_MUTED // Not documented, may be unavailable in the future
 
-      this._adsManager.addEventListener(google.ima.AdEvent.Type.MIDPOINT, function () {
-        _this2._dispatch('midpoint');
-      });
+      };
+      google.ima.AdEvent.Type.AD_CAN_PLAY && (adEvents.ad_can_play = google.ima.AdEvent.Type.AD_CAN_PLAY);
+      google.ima.AdEvent.Type.VIEWABLE_IMPRESSION && (adEvents.viewable_impression = google.ima.AdEvent.Type.VIEWABLE_IMPRESSION);
 
-      this._adsManager.addEventListener(google.ima.AdEvent.Type.THIRD_QUARTILE, function () {
-        _this2._dispatch('third_quartile');
-      });
+      var _loop = function _loop(adEvent) {
+        _this4._adsManager.addEventListener(adEvents[adEvent], function (e) {
+          _this4._dispatch(adEvent, e);
+        });
+      };
 
-      this._adsManager.addEventListener(google.ima.AdEvent.Type.COMPLETE, function () {
-        _this2._dispatch('complete');
-      });
-
-      this._adsManager.addEventListener(google.ima.AdEvent.Type.PAUSED, function () {
-        _this2._dispatch('paused');
-      });
-
-      this._adsManager.addEventListener(google.ima.AdEvent.Type.RESUMED, function () {
-        _this2._dispatch('resumed');
-      });
-
-      this._adsManager.addEventListener(google.ima.AdEvent.Type.SKIPPED, function () {
-        _this2._dispatch('skipped');
-      });
-
-      this._adsManager.addEventListener(google.ima.AdEvent.Type.VOLUME_CHANGED, function () {
-        _this2._dispatch('volume_changed');
-      });
-
-      this._adsManager.addEventListener(google.ima.AdEvent.Type.VOLUME_MUTED, function () {
-        _this2._dispatch('volume_muted');
-      });
-
-      this._adsManager.addEventListener(google.ima.AdEvent.Type.USER_CLOSE, function () {
-        _this2._dispatch('user_close');
-      });
+      for (var adEvent in adEvents) {
+        _loop(adEvent);
+      }
     }
   }, {
     key: "_onAdsManagerLoaded",
     value: function _onAdsManagerLoaded(adsManagerLoadedEvent) {
+      this._dispatch('ads_manager_loaded', adsManagerLoadedEvent); // Create default ads rendering settings
+
+
       var adsRenderingSettings = new google.ima.AdsRenderingSettings();
-      adsRenderingSettings.restoreCustomPlaybackStateOnAdBreakComplete = this._o.restoreVideo;
+      adsRenderingSettings.restoreCustomPlaybackStateOnAdBreakComplete = this._o.restoreVideo; // Assumes that ads rendering options is an object with ads rendering settings properties
+      // defined in the IMA SDK documentation (will override default settings)
+      // https://developers.google.com/interactive-media-ads/docs/sdks/html5/v3/apis#ima.AdsRenderingSettings
+
+      if (this._o.adsRenderingOptions) {
+        this._setProperties(adsRenderingSettings, this._o.adsRenderingOptions);
+      }
+
+      this._dispatch('ads_rendering_settings', adsRenderingSettings);
 
       this._destroyAdsManager();
 
       this._adsManager = adsManagerLoadedEvent.getAdsManager(this._o.video, adsRenderingSettings);
 
-      this._bindAdsManagerEvents();
+      this._bindAdsManagerEvents(); // Ad is ready to be played
 
-      this._playAd();
-    }
-  }, {
-    key: "stop",
-    value: function stop() {
-      this._dispatch('ad_stop');
 
-      if (this._adsManager) {
-        // Signal ads manager to stop and get back to content
-        this._adsManager.stop();
-      } else {
-        this._endAd();
+      this._adRequesting = false;
+      this._adRequested = true;
+
+      if (this._adPlayIntent) {
+        this._playAd();
       }
     }
   }, {
@@ -1346,15 +1503,15 @@ function () {
     value: function _onMaxDuration() {
       this._dispatch('error', new Error('Maximum duration of ' + this._o.maxDuration + ' ms reached'));
 
-      this.stop();
+      this._stop();
     }
   }, {
     key: "_startMaxDurationTimer",
     value: function _startMaxDurationTimer() {
-      var _this3 = this;
+      var _this5 = this;
 
       this._maxDurationTimer = setTimeout(function () {
-        _this3._onMaxDuration();
+        _this5._onMaxDuration();
       }, this._o.maxDuration);
     }
   }, {
@@ -1379,8 +1536,6 @@ function () {
     key: "_playAd",
     value: function _playAd() {
       try {
-        this._end = false;
-
         this._dispatch('ad_play');
 
         this._adsManager.init(this._o.video.offsetWidth, this._o.video.offsetHeight, google.ima.ViewMode.NORMAL);
@@ -1410,6 +1565,9 @@ function () {
       }
 
       this._end = true;
+      this._adPlayIntent = false;
+      this._adRequesting = false;
+      this._adRequested = false;
 
       this._resetMaxDurationTimer();
 
@@ -1433,7 +1591,7 @@ function () {
   return ImaPlayer;
 }();
 
-exports.default = ImaPlayer;
+exports["default"] = ImaPlayer;
 module.exports = exports.default;
 
 /***/ }),
@@ -1446,7 +1604,7 @@ module.exports = exports.default;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports["default"] = void 0;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -1461,7 +1619,7 @@ function () {
   function Observable() {
     _classCallCheck(this, Observable);
 
-    this.observers = {};
+    this.unsubscribeAll();
   }
 
   _createClass(Observable, [{
@@ -1490,8 +1648,12 @@ function () {
     }
   }, {
     key: "unsubscribeAll",
-    value: function unsubscribeAll(n) {
-      if (this.observers[n]) {
+    value: function unsubscribeAll() {
+      var n = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+      if (n === null) {
+        this.observers = {};
+      } else if (this.observers[n]) {
         delete this.observers[n];
       }
     }
@@ -1509,7 +1671,7 @@ function () {
   return Observable;
 }();
 
-exports.default = Observable;
+exports["default"] = Observable;
 module.exports = exports.default;
 
 /***/ })
