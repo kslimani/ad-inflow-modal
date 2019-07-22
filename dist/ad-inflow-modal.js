@@ -1131,6 +1131,7 @@ function () {
 
 
     this._adDisplayContainer = new google.ima.AdDisplayContainer(this._o.displayContainer, this._o.video);
+    this._adDisplayContainerInit = false;
   }
 
   _createClass(ImaPlayer, [{
@@ -1185,15 +1186,12 @@ function () {
   }, {
     key: "play",
     value: function play() {
-      var _this = this;
-
       this._dispatch('ad_play_intent');
 
       this._adPlayIntent = true;
+      this.initAdDisplayContainer();
 
-      this._userInteraction(function () {
-        _this._requestAd();
-      });
+      this._requestAd();
     }
   }, {
     key: "request",
@@ -1246,7 +1244,11 @@ function () {
     key: "initAdDisplayContainer",
     value: function initAdDisplayContainer() {
       // Must be done via a user interaction
-      this._adDisplayContainer.initialize();
+      if (!this._adDisplayContainerInit) {
+        this._adDisplayContainer.initialize();
+
+        this._adDisplayContainerInit = true;
+      }
     }
   }, {
     key: "destroy",
@@ -1266,32 +1268,6 @@ function () {
       this._adDisplayContainer && this._adDisplayContainer.destroy();
     }
   }, {
-    key: "_userInteraction",
-    value: function _userInteraction(next) {
-      var _this2 = this;
-
-      this.initAdDisplayContainer();
-
-      if (!this._o.video.load) {
-        next();
-      }
-
-      var eh = function eh() {
-        _this2._o.video.removeEventListener('loadedmetadata', eh, false);
-
-        _this2._o.video.removeEventListener('error', eh, false);
-
-        next();
-      }; // Enable video element to "capture" user interaction
-
-
-      this._o.video.addEventListener('loadedmetadata', eh, false);
-
-      this._o.video.addEventListener('error', eh, false);
-
-      this._o.video.load();
-    }
-  }, {
     key: "_stop",
     value: function _stop() {
       this._dispatch('ad_stop');
@@ -1306,16 +1282,16 @@ function () {
   }, {
     key: "_makeAdsLoader",
     value: function _makeAdsLoader() {
-      var _this3 = this;
+      var _this = this;
 
       this._adsLoader = new google.ima.AdsLoader(this._adDisplayContainer);
 
       this._adsLoader.addEventListener(google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED, function (e) {
-        _this3._onAdsManagerLoaded(e);
+        _this._onAdsManagerLoaded(e);
       });
 
       this._adsLoader.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, function (e) {
-        _this3._onAdError(e);
+        _this._onAdError(e);
       });
     }
   }, {
@@ -1379,52 +1355,52 @@ function () {
   }, {
     key: "_bindAdsManagerEvents",
     value: function _bindAdsManagerEvents() {
-      var _this4 = this;
+      var _this2 = this;
 
       this._adsManager.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, function (e) {
-        _this4._onAdError(e);
+        _this2._onAdError(e);
       });
 
       this._adsManager.addEventListener(google.ima.AdEvent.Type.CONTENT_PAUSE_REQUESTED, function (e) {
-        _this4._end = false;
+        _this2._end = false;
 
-        _this4._dispatch('content_pause_requested', e);
+        _this2._dispatch('content_pause_requested', e);
 
-        _this4._dispatch('ad_begin'); // "content_pause_requested" event alias
+        _this2._dispatch('ad_begin'); // "content_pause_requested" event alias
 
       });
 
       this._adsManager.addEventListener(google.ima.AdEvent.Type.CONTENT_RESUME_REQUESTED, function (e) {
-        _this4._dispatch('content_resume_requested', e);
+        _this2._dispatch('content_resume_requested', e);
 
-        _this4._endAd();
+        _this2._endAd();
       });
 
       this._adsManager.addEventListener(google.ima.AdEvent.Type.STARTED, function (e) {
-        _this4._dispatch('started', e);
+        _this2._dispatch('started', e);
 
         var ad = e.getAd();
 
         if (ad.isLinear()) {
-          _this4._o.maxDuration && _this4._startMaxDurationTimer();
+          _this2._o.maxDuration && _this2._startMaxDurationTimer();
         } else {
           // Signal non-linear ad scenario
-          var duration = _this4._o.nonLinearMaxDuration;
+          var duration = _this2._o.nonLinearMaxDuration;
 
-          _this4._dispatch('ad_non_linear', {
+          _this2._dispatch('ad_non_linear', {
             ad: ad,
             duration: duration
           }); // By default, IMA SDK will automatically close non-linear ad (after 45 seconds ?)
 
 
-          if (_this4._o.nonLinearMaxDuration > 0) {
+          if (_this2._o.nonLinearMaxDuration > 0) {
             setTimeout(function () {
-              _this4._adsManager && _this4._adsManager.stop();
-            }, _this4._o.nonLinearMaxDuration);
+              _this2._adsManager && _this2._adsManager.stop();
+            }, _this2._o.nonLinearMaxDuration);
           } // Ends to play/resume content video
 
 
-          _this4._endAd();
+          _this2._endAd();
         }
       });
 
@@ -1458,8 +1434,8 @@ function () {
       google.ima.AdEvent.Type.VIEWABLE_IMPRESSION && (adEvents.viewable_impression = google.ima.AdEvent.Type.VIEWABLE_IMPRESSION);
 
       var _loop = function _loop(adEvent) {
-        _this4._adsManager.addEventListener(adEvents[adEvent], function (e) {
-          _this4._dispatch(adEvent, e);
+        _this2._adsManager.addEventListener(adEvents[adEvent], function (e) {
+          _this2._dispatch(adEvent, e);
         });
       };
 
@@ -1488,7 +1464,9 @@ function () {
 
       this._adsManager = adsManagerLoadedEvent.getAdsManager(this._o.video, adsRenderingSettings);
 
-      this._bindAdsManagerEvents(); // Ad is ready to be played
+      this._bindAdsManagerEvents();
+
+      this._dispatch('ads_manager', this._adsManager); // Ad is ready to be played
 
 
       this._adRequesting = false;
@@ -1508,10 +1486,10 @@ function () {
   }, {
     key: "_startMaxDurationTimer",
     value: function _startMaxDurationTimer() {
-      var _this5 = this;
+      var _this3 = this;
 
       this._maxDurationTimer = setTimeout(function () {
-        _this5._onMaxDuration();
+        _this3._onMaxDuration();
       }, this._o.maxDuration);
     }
   }, {
