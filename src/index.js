@@ -1,4 +1,4 @@
-import { make, el, addOneClass, removeClass } from './dom'
+import { make, addOneClass, removeClass } from './dom'
 import { svg, video } from './dummy'
 import BodyLocker from './body-locker'
 import detectMobile from './detect-mobile'
@@ -21,7 +21,7 @@ export default class AdInflowModal {
       this.close()
     }
 
-    this._onPlayIntent = (e) => {
+    this._onPlayIntent = () => {
       this._hidePlayOverlay()
       this._adPlayer.play()
     }
@@ -157,7 +157,7 @@ export default class AdInflowModal {
 
     try {
       console.log('ad-inflow-modal:', e)
-    } catch(err) {}
+    } catch(err) {} // eslint-disable-line no-empty
   }
 
   _makeAdPlayer() {
@@ -187,7 +187,7 @@ export default class AdInflowModal {
     if (isMobile) {
       this._open(false)
     } else {
-      canAutoPlay((result, error) => {
+      canAutoPlay((result, /*error*/) => {
         this._open(result)
       }, timeout)
     }
@@ -220,17 +220,17 @@ export default class AdInflowModal {
       })
     }
 
-    this._adPlayer.on('started', (o) => {
+    this._adPlayer.on('started', () => {
       this._showCloseButton(this._o.closeButtonDelay)
     })
 
-    this._adPlayer.on('ad_end', (o) => {
+    this._adPlayer.on('ad_end', () => {
       this._close()
     })
 
     if (autoplay || this._o.openOnInteractionIfNoAutoplay) {
       // Modal will show up on "ad begin" ad player event
-      this._adPlayer.on('ad_begin', (o) => {
+      this._adPlayer.on('ad_begin', () => {
         this._show()
         this._body.lock()
       })
