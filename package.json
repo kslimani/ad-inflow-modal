@@ -6,7 +6,8 @@
   "scripts": {
     "build": "webpack --progress --mode production",
     "dist": "webpack --progress --mode production",
-    "release": "npm run build && npm run dist",
+    "lint": "eslint webpack.config.js src/**/*.js",
+    "release": "npm run lint && npm run build && npm run dist",
     "start": "webpack-dev-server --mode development"
   },
   "author": "Karim Slimani <karim@playmedia.fr>",
@@ -19,6 +20,7 @@
     "babel-loader": "^8.0",
     "core-js": "^3.6",
     "css-loader": "^3.4",
+    "eslint": "^6.8.0",
     "ima-ad-player": "^0.5",
     "mini-css-extract-plugin": "^0.9",
     "optimize-css-assets-webpack-plugin": "^5.0",
