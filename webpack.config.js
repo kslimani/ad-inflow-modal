@@ -1,7 +1,6 @@
 // Webpack 4 configuration
 const path = require('path')
-const webpack = require('webpack')
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin")
+const TerserPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin")
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin")
 const NotifierPlugin = require('webpack-build-notifier')
@@ -13,9 +12,8 @@ if (process.env.npm_lifecycle_event === 'dist') {
   jsOutFile = name + '.min.js'
   cssOutFile = name + '.min.css'
   optimization.minimizer = [
-    new UglifyJsPlugin({
-      cache: true,
-      parallel: true,
+    new TerserPlugin({
+      cache: true, // TODO: set to false if Webpack upgraded to 5.x ?
     }),
     new OptimizeCSSAssetsPlugin({})
   ]
@@ -40,6 +38,7 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     filename: jsOutFile,
     library: 'AdInflowModal',
+    libraryExport: 'default',
     libraryTarget: 'umd',
   },
   module: {
