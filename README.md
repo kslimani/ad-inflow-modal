@@ -30,4 +30,4 @@ var modal = new AdInflowModal({
 modal.open();
 ```
 
-Note: `imaAdPlayer` property is [IMA Ad player](https://github.com/kslimani/ima-ad-player) configuration object.
+Note: `imaAdPlayer` property is IMA Ad player [configuration object](https://github.com/kslimani/ima-ad-player/blob/master/docs/config.md).
