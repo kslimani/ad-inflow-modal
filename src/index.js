@@ -27,6 +27,10 @@ export default class AdInflowModal {
     }
   }
 
+  static get vpaidMode() {
+    return ImaAdPlayer.vpaidMode
+  }
+
   _configure(o) {
     o.closeButtonDelay || (o.closeButtonDelay = 5000)
     o.skipAdIfNoAutoplay || (o.skipAdIfNoAutoplay = false)
