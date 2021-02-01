@@ -21,7 +21,7 @@ var modal = new AdInflowModal({
   // requestAdIfNoAutoplay: true,
   imaAdPlayer: {
     tag: 'https://myadserver.com/path/to/vast/linear/tag.xml',
-    vpaidMode: 2,
+    vpaidMode: AdInflowModal.vpaidMode.INSECURE,
     locale: 'fr',
     maxDuration: 30000,
   },
