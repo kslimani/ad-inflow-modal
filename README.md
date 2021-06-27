@@ -1,3 +1,5 @@
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 # Ad inflow modal
 
 A simple modal inflow video ad.
@@ -31,3 +33,7 @@ modal.open();
 ```
 
 Note: `imaAdPlayer` property is IMA Ad player [configuration object](https://github.com/kslimani/ima-ad-player/blob/master/docs/config.md).
+
+## License
+
+The MIT License (MIT). Please see [License File](LICENSE) for more information.
