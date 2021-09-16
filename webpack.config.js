@@ -2,7 +2,7 @@
 const path = require('path')
 const TerserPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin")
-const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin")
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const NotifierPlugin = require('webpack-build-notifier')
 
 var name = 'ad-inflow-modal'
@@ -13,7 +13,7 @@ if (process.env.npm_lifecycle_event === 'dist') {
   cssOutFile = name + '.min.css'
   optimization.minimizer = [
     new TerserPlugin(),
-    new OptimizeCSSAssetsPlugin({})
+    new CssMinimizerPlugin()
   ]
 } else {
   jsOutFile = name + '.js'
