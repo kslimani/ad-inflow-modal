@@ -1,4 +1,4 @@
-// Webpack 4 configuration
+// Webpack 5 configuration
 const path = require('path')
 const TerserPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin")
@@ -12,9 +12,7 @@ if (process.env.npm_lifecycle_event === 'dist') {
   jsOutFile = name + '.min.js'
   cssOutFile = name + '.min.css'
   optimization.minimizer = [
-    new TerserPlugin({
-      cache: true, // TODO: set to false if Webpack upgraded to 5.x ?
-    }),
+    new TerserPlugin(),
     new OptimizeCSSAssetsPlugin({})
   ]
 } else {
@@ -37,9 +35,11 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: jsOutFile,
-    library: 'AdInflowModal',
-    libraryExport: 'default',
-    libraryTarget: 'umd',
+    library: {
+      type: 'umd',
+      name: 'AdInflowModal',
+      export: 'default',
+    },
   },
   module: {
     rules: [
@@ -70,12 +70,12 @@ module.exports = {
   },
   plugins: plugins,
   devServer: {
-    contentBase: [
+    static: [
       path.resolve(__dirname, "public"),
     ],
-    disableHostCheck: true,
+    // firewall: false,
     compress: true,
-    host: "0.0.0.0",
+    host: '0.0.0.0',
     port: 8080
   }
 }
