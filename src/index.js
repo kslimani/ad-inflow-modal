@@ -161,7 +161,7 @@ export default class AdInflowModal {
 
     try {
       console.log('ad-inflow-modal:', e)
-    } catch(err) {} // eslint-disable-line no-empty
+    } catch(err) {} // eslint-disable-line no-unused-vars, no-empty
   }
 
   _makeAdPlayer() {
